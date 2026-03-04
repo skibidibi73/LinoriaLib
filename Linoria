@@ -144,20 +144,20 @@ function Library:ApplyTextStroke(Inst)
 end;
 
 -- ==========================================
--- 💡 カスタム：ぼんやり光るGlowエフェクト関数
--- 枠線ではなく、ぼかし画像(Shadow)を使って光を表現します
+-- 💡 カスタム：ぼんやり光るGlowエフェクト関数（位置ズレ修正版）
 -- ==========================================
 function Library:ApplyGlow(Inst, Color, Transparency)
     Library:Create('ImageLabel', {
         Name = 'SoftGlow',
         BackgroundTransparency = 1,
-        Image = 'rbxassetid://5028857084', -- Roblox公式のぼかし影素材
+        Image = 'rbxassetid://4743324156', -- シャープな光素材
         ImageColor3 = Color or Library.AccentColor,
-        ImageTransparency = Transparency or 0.2,
+        ImageTransparency = Transparency or 0.1, -- 理想画像のように少し濃く発光させる
         ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(24, 24, 276, 276),
-        Size = UDim2.new(1, 60, 1, 60), -- 本体の枠より30pxずつ外側に広げる
-        Position = UDim2.fromOffset(-30, -30), -- 中心を合わせる
+        SliceCenter = Rect.new(15, 15, 241, 241), 
+        Size = UDim2.new(1, 34, 1, 34), -- 広がりすぎないように調整（+34px）
+        AnchorPoint = Vector2.new(0.5, 0.5), -- ズレ解消：中心を基準にする
+        Position = UDim2.new(0.5, 0, 0.5, 0), -- 親の中心にピッタリ合わせる
         ZIndex = 0, -- UIの背面に置く
         Parent = Inst
     });
