@@ -144,15 +144,22 @@ function Library:ApplyTextStroke(Inst)
 end;
 
 -- ==========================================
--- 💡 カスタム：UIを光らせる（Glow効果）関数
+-- 💡 カスタム：ぼんやり光るGlowエフェクト関数
+-- 枠線ではなく、ぼかし画像(Shadow)を使って光を表現します
 -- ==========================================
-function Library:ApplyGlow(Inst, Color, Thickness, Transparency)
-    Library:Create('UIStroke', {
-        Color = Color or Library.AccentColor; -- 指定がなければテーマのアクセントカラーで光る
-        Thickness = Thickness or 4; -- 光の太さ
-        Transparency = Transparency or 0.3; -- 光の透明度
-        ApplyStrokeMode = Enum.ApplyStrokeMode.Border;
-        Parent = Inst;
+function Library:ApplyGlow(Inst, Color, Transparency)
+    Library:Create('ImageLabel', {
+        Name = 'SoftGlow',
+        BackgroundTransparency = 1,
+        Image = 'rbxassetid://5028857084', -- Roblox公式のぼかし影素材
+        ImageColor3 = Color or Library.AccentColor,
+        ImageTransparency = Transparency or 0.2,
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(24, 24, 276, 276),
+        Size = UDim2.new(1, 60, 1, 60), -- 本体の枠より30pxずつ外側に広げる
+        Position = UDim2.fromOffset(-30, -30), -- 中心を合わせる
+        ZIndex = 0, -- UIの背面に置く
+        Parent = Inst
     });
 end;
 
@@ -2749,8 +2756,8 @@ do
         Parent = ScreenGui;
     });
 
-    -- 🌟 改造ポイント: キーバインドリストを光らせる
-    Library:ApplyGlow(KeybindOuter, Library.AccentColor, 3, 0.2);
+    -- 🌟 改造ポイント: キーバインドをぼんやり光らせる
+    Library:ApplyGlow(KeybindOuter, Library.AccentColor, 0.2);
 
     local KeybindInner = Library:Create('Frame', {
         BackgroundColor3 = Library.MainColor;
@@ -2953,8 +2960,8 @@ function Library:CreateWindow(...)
         Parent = ScreenGui;
     });
 
-    -- 🌟 改造ポイント: メインウィンドウ全体を光らせる
-    Library:ApplyGlow(Outer, Library.AccentColor, 5, 0.4);
+    -- 🌟 改造ポイント: メインUIをぼんやり光らせる
+    Library:ApplyGlow(Outer, Library.AccentColor, 0.2);
 
     Library:MakeDraggable(Outer, 25);
 
@@ -2977,11 +2984,38 @@ function Library:CreateWindow(...)
         Position = UDim2.new(0, 7, 0, 0);
         Size = UDim2.new(0, 0, 0, 25);
         Text = Config.Title or '';
-        RichText = true; -- 🌟 改造ポイント: タイトルのRichText（色分け）を有効化
+        RichText = true; 
         TextXAlignment = Enum.TextXAlignment.Left;
         ZIndex = 1;
         Parent = Inner;
     });
+
+    -- 🌟 改造ポイント: 右上に赤字で現在いるマップ名を表示
+    local MapNameLabel = Library:CreateLabel({
+        AnchorPoint = Vector2.new(1, 0),
+        Position = UDim2.new(1, -7, 0, 0), -- 右から7px離す
+        Size = UDim2.new(0, 0, 0, 25),
+        Text = 'Loading...',
+        TextColor3 = Color3.fromRGB(255, 50, 50), -- 赤色
+        TextXAlignment = Enum.TextXAlignment.Right,
+        ZIndex = 1,
+        Parent = Inner;
+    });
+    Library:RemoveFromRegistry(MapNameLabel) -- テーマで色が上書きされるのを防ぐ
+    MapNameLabel.TextColor3 = Color3.fromRGB(255, 50, 50) -- 常に赤色にする
+
+    -- マップ名を非同期で取得して表示
+    task.spawn(function()
+        local success, info = pcall(function()
+            return game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId)
+        end)
+        if success and info and info.Name then
+            MapNameLabel.Text = info.Name
+        else
+            MapNameLabel.Text = game.Name or "Unknown Map"
+        end
+    end)
+
 
     local MainSectionOuter = Library:Create('Frame', {
         BackgroundColor3 = Library.BackgroundColor;
