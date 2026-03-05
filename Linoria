@@ -144,44 +144,42 @@ function Library:ApplyTextStroke(Inst)
 end;
 
 -- ==========================================
--- 💡 カスタム：ぼんやり光るGlowエフェクト（完璧な計算・本物の光版！）
+-- 💡 カスタム：ぼんやり光るGlowエフェクト（画像完全排除・究極版！）
+-- 画像の読み込みバグを防ぐため、枠線を8層重ねて光のグラデーションを作ります
 -- ==========================================
 function Library:ApplyGlow(Inst)
-    -- 1. 内側の強い光 (エッジを際立たせる)
-    local GlowInner = Library:Create('ImageLabel', {
-        Name = 'GlowInner',
+    local GlowContainer = Library:Create('Frame', {
+        Name = 'GlowContainer',
         BackgroundTransparency = 1,
-        Image = 'rbxassetid://1316045217', -- 実績のある滑らかなシャドウ素材
-        ImageColor3 = Library.AccentColor,
-        ImageTransparency = 0.2, -- 濃いめ
-        ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(64, 64, 64, 64), -- 🌟 ここが超重要！画像のど真ん中1pxだけを伸ばすことでグラデーションを完全保護
-        Size = UDim2.new(1, 14, 1, 14), -- UIより少しだけ大きく
-        Position = UDim2.new(0.5, 0, 0.5, 0),
-        AnchorPoint = Vector2.new(0.5, 0.5),
+        Size = UDim2.new(1, 0, 1, 0),
+        Position = UDim2.new(0, 0, 0, 0),
         ZIndex = 0,
         Parent = Inst
-    });
+    })
 
-    -- 2. 外側のフワッとした光 (リアルな広がり)
-    local GlowOuter = Library:Create('ImageLabel', {
-        Name = 'GlowOuter',
-        BackgroundTransparency = 1,
-        Image = 'rbxassetid://1316045217',
-        ImageColor3 = Library.AccentColor,
-        ImageTransparency = 0.6, -- 薄めにしてフワッとさせる
-        ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(64, 64, 64, 64), -- 🌟 グラデーションの保護
-        Size = UDim2.new(1, 40, 1, 40), -- 大きく広げる
-        Position = UDim2.new(0.5, 0, 0.5, 0),
-        AnchorPoint = Vector2.new(0.5, 0.5),
-        ZIndex = 0,
-        Parent = Inst
-    });
+    local layers = 8 -- 光の層の数（増やすほど滑らかになります）
+    
+    for i = 1, layers do
+        local layerFrame = Library:Create('Frame', {
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 1, 0),
+            Position = UDim2.new(0, 0, 0, 0),
+            ZIndex = 0,
+            Parent = GlowContainer
+        })
 
-    -- テーマカラー変更時にリアルタイムで色を変える
-    Library:AddToRegistry(GlowInner, { ImageColor3 = 'AccentColor' });
-    Library:AddToRegistry(GlowOuter, { ImageColor3 = 'AccentColor' });
+        local stroke = Library:Create('UIStroke', {
+            Color = Library.AccentColor,
+            Thickness = i * 2.5, -- 外側に行くほど枠線を太くする
+            Transparency = 0.2 + (0.8 * (i / layers)), -- 外側に行くほど透明にする
+            ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+            LineJoinMode = Enum.LineJoinMode.Round, -- 光の角を丸めてフワッとさせる
+            Parent = layerFrame
+        })
+
+        -- テーマカラー変更時に全層の色を連動させる
+        Library:AddToRegistry(stroke, { Color = 'AccentColor' })
+    end
 end;
 
 function Library:CreateLabel(Properties, IsHud)
