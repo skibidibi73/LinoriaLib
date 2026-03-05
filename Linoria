@@ -144,44 +144,53 @@ function Library:ApplyTextStroke(Inst)
 end;
 
 -- ==========================================
--- 💡 カスタム：ぼんやり光るGlowエフェクト（2重レイヤー完璧版）
+-- 💡 カスタム：ぼんやり光るGlowエフェクト（極太ネオン・ズレ完全解消版）
 -- ==========================================
 function Library:ApplyGlow(Inst)
-    -- 1枚目: 内側の濃い光 (シャープさを出す)
-    local GlowInner = Library:Create('ImageLabel', {
-        Name = 'GlowInner',
-        BackgroundTransparency = 1,
-        Image = 'rbxassetid://5028857084', -- 画像1で動作確認済みの素材
-        ImageColor3 = Library.AccentColor,
-        ImageTransparency = 0, -- 透過なしでクッキリさせる
-        ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(24, 24, 276, 276), 
-        Size = UDim2.new(1, 24, 1, 24), -- 親より24px大きい
-        AnchorPoint = Vector2.new(0.5, 0.5), -- 中心基準（ズレ解消）
-        Position = UDim2.new(0.5, 0, 0.5, 0), -- ど真ん中に配置
-        ZIndex = 0, -- UIの背面に置く
+    -- 1. 内側のクッキリしたネオン線
+    local Stroke = Library:Create('UIStroke', {
+        Color = Library.AccentColor,
+        Thickness = 2, -- Rivals風の太めの縁取り
+        Transparency = 0,
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
         Parent = Inst
     });
 
-    -- 2枚目: 外側のフワッとした光 (ぼかしを出す)
-    local GlowOuter = Library:Create('ImageLabel', {
-        Name = 'GlowOuter',
+    -- 2. 外側の強いぼかし光（ズレを数学的に完全解消）
+    -- 親UIより40px大きくし、左上に20pxズラすことで絶対に中心になります
+    local Glow1 = Library:Create('ImageLabel', {
+        Name = 'Glow1',
         BackgroundTransparency = 1,
         Image = 'rbxassetid://5028857084',
         ImageColor3 = Library.AccentColor,
-        ImageTransparency = 0.4, -- 少し透過させてフワッと感を出す
+        ImageTransparency = 0.1, -- 非常に濃くする
         ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(24, 24, 276, 276), 
-        Size = UDim2.new(1, 46, 1, 46), -- さらに外側まで広げる
-        AnchorPoint = Vector2.new(0.5, 0.5),
-        Position = UDim2.new(0.5, 0, 0.5, 0),
+        SliceCenter = Rect.new(24, 24, 276, 276),
+        Size = UDim2.new(1, 40, 1, 40), 
+        Position = UDim2.new(0, -20, 0, -20), 
         ZIndex = 0,
         Parent = Inst
     });
 
-    -- テーマカラー変更時にGlowの色も自動で変わるように登録！
-    Library:AddToRegistry(GlowInner, { ImageColor3 = 'AccentColor' });
-    Library:AddToRegistry(GlowOuter, { ImageColor3 = 'AccentColor' });
+    -- 3. さらに外側に広がるフワッとした光
+    local Glow2 = Library:Create('ImageLabel', {
+        Name = 'Glow2',
+        BackgroundTransparency = 1,
+        Image = 'rbxassetid://5028857084',
+        ImageColor3 = Library.AccentColor,
+        ImageTransparency = 0.4, 
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(24, 24, 276, 276),
+        Size = UDim2.new(1, 80, 1, 80),
+        Position = UDim2.new(0, -40, 0, -40),
+        ZIndex = 0,
+        Parent = Inst
+    });
+
+    -- 全てテーマカラーに連動させる
+    Library:AddToRegistry(Stroke, { Color = 'AccentColor' });
+    Library:AddToRegistry(Glow1, { ImageColor3 = 'AccentColor' });
+    Library:AddToRegistry(Glow2, { ImageColor3 = 'AccentColor' });
 end;
 
 function Library:CreateLabel(Properties, IsHud)
@@ -2777,7 +2786,7 @@ do
         Parent = ScreenGui;
     });
 
-    -- 🌟 キーバインドリストを光らせる（引数なしで自動的にテーマカラーが適用されます）
+    -- 🌟 キーバインドリストを光らせる
     Library:ApplyGlow(KeybindOuter);
 
     local KeybindInner = Library:Create('Frame', {
@@ -2981,7 +2990,7 @@ function Library:CreateWindow(...)
         Parent = ScreenGui;
     });
 
-    -- 🌟 メインUIを光らせる（引数なしで自動的にテーマカラーが適用されます）
+    -- 🌟 メインUIを光らせる
     Library:ApplyGlow(Outer);
 
     Library:MakeDraggable(Outer, 25);
