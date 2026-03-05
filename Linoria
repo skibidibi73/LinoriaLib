@@ -144,40 +144,47 @@ function Library:ApplyTextStroke(Inst)
 end;
 
 -- ==========================================
--- 💡 カスタム：ぼんやり光るGlowエフェクト（画像完全排除・究極版！）
--- 画像の読み込みバグを防ぐため、枠線を8層重ねて光のグラデーションを作ります
+-- 💡 カスタム：ぼんやり光るGlowエフェクト（極限スリム・超グラデーション版）
 -- ==========================================
 function Library:ApplyGlow(Inst)
     local GlowContainer = Library:Create('Frame', {
         Name = 'GlowContainer',
         BackgroundTransparency = 1,
         Size = UDim2.new(1, 0, 1, 0),
-        Position = UDim2.new(0, 0, 0, 0),
         ZIndex = 0,
         Parent = Inst
     })
 
-    local layers = 8 -- 光の層の数（増やすほど滑らかになります）
-    
+    -- 1. 最内周のクッキリしたエッジ（UIの輪郭を強調）
+    local baseStroke = Library:Create('UIStroke', {
+        Color = Library.AccentColor,
+        Thickness = 1,
+        Transparency = 0.1, -- ハッキリ見える濃さ
+        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+        Parent = GlowContainer
+    })
+    Library:AddToRegistry(baseStroke, { Color = 'AccentColor' })
+
+    -- 2. 外側のフワッとした光（15層に分けて極薄で重ねる）
+    local layers = 15
     for i = 1, layers do
         local layerFrame = Library:Create('Frame', {
             BackgroundTransparency = 1,
             Size = UDim2.new(1, 0, 1, 0),
-            Position = UDim2.new(0, 0, 0, 0),
             ZIndex = 0,
             Parent = GlowContainer
         })
 
         local stroke = Library:Create('UIStroke', {
             Color = Library.AccentColor,
-            Thickness = i * 2.5, -- 外側に行くほど枠線を太くする
-            Transparency = 0.2 + (0.8 * (i / layers)), -- 外側に行くほど透明にする
+            Thickness = i * 2, -- 最大30pxの広がり
+            -- 🌟 限界まで薄く設定 (85%透明 〜 100%透明)
+            -- 15層重なることで、ちょうどいいフワッとした濃さになります
+            Transparency = 0.85 + (0.15 * (i / layers)), 
             ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-            LineJoinMode = Enum.LineJoinMode.Round, -- 光の角を丸めてフワッとさせる
+            LineJoinMode = Enum.LineJoinMode.Round, -- 光の角を丸める
             Parent = layerFrame
         })
-
-        -- テーマカラー変更時に全層の色を連動させる
         Library:AddToRegistry(stroke, { Color = 'AccentColor' })
     end
 end;
