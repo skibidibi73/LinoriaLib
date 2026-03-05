@@ -144,53 +144,27 @@ function Library:ApplyTextStroke(Inst)
 end;
 
 -- ==========================================
--- 💡 カスタム：ぼんやり光るGlowエフェクト（極太ネオン・ズレ完全解消版）
+-- 💡 カスタム：ぼんやり光るGlowエフェクト（Rivals完全再現版！）
+-- 2本線になる問題とズレを解消し、中身の詰まった1枚の影素材を使用
 -- ==========================================
 function Library:ApplyGlow(Inst)
-    -- 1. 内側のクッキリしたネオン線
-    local Stroke = Library:Create('UIStroke', {
-        Color = Library.AccentColor,
-        Thickness = 2, -- Rivals風の太めの縁取り
-        Transparency = 0,
-        ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-        Parent = Inst
-    });
-
-    -- 2. 外側の強いぼかし光（ズレを数学的に完全解消）
-    -- 親UIより40px大きくし、左上に20pxズラすことで絶対に中心になります
-    local Glow1 = Library:Create('ImageLabel', {
-        Name = 'Glow1',
+    local Glow = Library:Create('ImageLabel', {
+        Name = 'Glow',
         BackgroundTransparency = 1,
-        Image = 'rbxassetid://5028857084',
+        Image = 'rbxassetid://1316045217', -- 実績のある、中身が詰まったドロップシャドウ素材
         ImageColor3 = Library.AccentColor,
-        ImageTransparency = 0.1, -- 非常に濃くする
+        ImageTransparency = 0.15, -- Rivalsのような強めの光
         ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(24, 24, 276, 276),
-        Size = UDim2.new(1, 40, 1, 40), 
-        Position = UDim2.new(0, -20, 0, -20), 
-        ZIndex = 0,
+        SliceCenter = Rect.new(10, 10, 118, 118),
+        Size = UDim2.new(1, 30, 1, 30), -- 親UIから四方に15pxずつはみ出させる
+        Position = UDim2.new(0.5, 0, 0.5, 0), -- 絶対に親の中心！
+        AnchorPoint = Vector2.new(0.5, 0.5), -- 基準点を中心に！
+        ZIndex = 0, -- UIの背面に置く
         Parent = Inst
     });
 
-    -- 3. さらに外側に広がるフワッとした光
-    local Glow2 = Library:Create('ImageLabel', {
-        Name = 'Glow2',
-        BackgroundTransparency = 1,
-        Image = 'rbxassetid://5028857084',
-        ImageColor3 = Library.AccentColor,
-        ImageTransparency = 0.4, 
-        ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(24, 24, 276, 276),
-        Size = UDim2.new(1, 80, 1, 80),
-        Position = UDim2.new(0, -40, 0, -40),
-        ZIndex = 0,
-        Parent = Inst
-    });
-
-    -- 全てテーマカラーに連動させる
-    Library:AddToRegistry(Stroke, { Color = 'AccentColor' });
-    Library:AddToRegistry(Glow1, { ImageColor3 = 'AccentColor' });
-    Library:AddToRegistry(Glow2, { ImageColor3 = 'AccentColor' });
+    -- テーマカラー変更時にGlowの色も自動で変わるように登録！
+    Library:AddToRegistry(Glow, { ImageColor3 = 'AccentColor' });
 end;
 
 function Library:CreateLabel(Properties, IsHud)
