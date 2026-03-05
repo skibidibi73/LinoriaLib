@@ -144,23 +144,44 @@ function Library:ApplyTextStroke(Inst)
 end;
 
 -- ==========================================
--- 💡 カスタム：ぼんやり光るGlowエフェクト関数（位置ズレ修正版）
+-- 💡 カスタム：ぼんやり光るGlowエフェクト（2重レイヤー完璧版）
 -- ==========================================
-function Library:ApplyGlow(Inst, Color, Transparency)
-    Library:Create('ImageLabel', {
-        Name = 'SoftGlow',
+function Library:ApplyGlow(Inst)
+    -- 1枚目: 内側の濃い光 (シャープさを出す)
+    local GlowInner = Library:Create('ImageLabel', {
+        Name = 'GlowInner',
         BackgroundTransparency = 1,
-        Image = 'rbxassetid://4743324156', -- シャープな光素材
-        ImageColor3 = Color or Library.AccentColor,
-        ImageTransparency = Transparency or 0.1, -- 理想画像のように少し濃く発光させる
+        Image = 'rbxassetid://5028857084', -- 画像1で動作確認済みの素材
+        ImageColor3 = Library.AccentColor,
+        ImageTransparency = 0, -- 透過なしでクッキリさせる
         ScaleType = Enum.ScaleType.Slice,
-        SliceCenter = Rect.new(15, 15, 241, 241), 
-        Size = UDim2.new(1, 34, 1, 34), -- 広がりすぎないように調整（+34px）
-        AnchorPoint = Vector2.new(0.5, 0.5), -- ズレ解消：中心を基準にする
-        Position = UDim2.new(0.5, 0, 0.5, 0), -- 親の中心にピッタリ合わせる
+        SliceCenter = Rect.new(24, 24, 276, 276), 
+        Size = UDim2.new(1, 24, 1, 24), -- 親より24px大きい
+        AnchorPoint = Vector2.new(0.5, 0.5), -- 中心基準（ズレ解消）
+        Position = UDim2.new(0.5, 0, 0.5, 0), -- ど真ん中に配置
         ZIndex = 0, -- UIの背面に置く
         Parent = Inst
     });
+
+    -- 2枚目: 外側のフワッとした光 (ぼかしを出す)
+    local GlowOuter = Library:Create('ImageLabel', {
+        Name = 'GlowOuter',
+        BackgroundTransparency = 1,
+        Image = 'rbxassetid://5028857084',
+        ImageColor3 = Library.AccentColor,
+        ImageTransparency = 0.4, -- 少し透過させてフワッと感を出す
+        ScaleType = Enum.ScaleType.Slice,
+        SliceCenter = Rect.new(24, 24, 276, 276), 
+        Size = UDim2.new(1, 46, 1, 46), -- さらに外側まで広げる
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        ZIndex = 0,
+        Parent = Inst
+    });
+
+    -- テーマカラー変更時にGlowの色も自動で変わるように登録！
+    Library:AddToRegistry(GlowInner, { ImageColor3 = 'AccentColor' });
+    Library:AddToRegistry(GlowOuter, { ImageColor3 = 'AccentColor' });
 end;
 
 function Library:CreateLabel(Properties, IsHud)
@@ -2756,8 +2777,8 @@ do
         Parent = ScreenGui;
     });
 
-    -- 🌟 改造ポイント: キーバインドをぼんやり光らせる
-    Library:ApplyGlow(KeybindOuter, Library.AccentColor, 0.2);
+    -- 🌟 キーバインドリストを光らせる（引数なしで自動的にテーマカラーが適用されます）
+    Library:ApplyGlow(KeybindOuter);
 
     local KeybindInner = Library:Create('Frame', {
         BackgroundColor3 = Library.MainColor;
@@ -2960,8 +2981,8 @@ function Library:CreateWindow(...)
         Parent = ScreenGui;
     });
 
-    -- 🌟 改造ポイント: メインUIをぼんやり光らせる
-    Library:ApplyGlow(Outer, Library.AccentColor, 0.2);
+    -- 🌟 メインUIを光らせる（引数なしで自動的にテーマカラーが適用されます）
+    Library:ApplyGlow(Outer);
 
     Library:MakeDraggable(Outer, 25);
 
@@ -2990,21 +3011,20 @@ function Library:CreateWindow(...)
         Parent = Inner;
     });
 
-    -- 🌟 改造ポイント: 右上に赤字で現在いるマップ名を表示
+    -- 🌟 右上に赤字で現在いるマップ名を表示
     local MapNameLabel = Library:CreateLabel({
         AnchorPoint = Vector2.new(1, 0),
-        Position = UDim2.new(1, -7, 0, 0), -- 右から7px離す
+        Position = UDim2.new(1, -7, 0, 0),
         Size = UDim2.new(0, 0, 0, 25),
         Text = 'Loading...',
-        TextColor3 = Color3.fromRGB(255, 50, 50), -- 赤色
+        TextColor3 = Color3.fromRGB(255, 50, 50),
         TextXAlignment = Enum.TextXAlignment.Right,
         ZIndex = 1,
         Parent = Inner;
     });
-    Library:RemoveFromRegistry(MapNameLabel) -- テーマで色が上書きされるのを防ぐ
-    MapNameLabel.TextColor3 = Color3.fromRGB(255, 50, 50) -- 常に赤色にする
+    Library:RemoveFromRegistry(MapNameLabel) 
+    MapNameLabel.TextColor3 = Color3.fromRGB(255, 50, 50) 
 
-    -- マップ名を非同期で取得して表示
     task.spawn(function()
         local success, info = pcall(function()
             return game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId)
