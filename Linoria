@@ -144,26 +144,24 @@ function Library:ApplyTextStroke(Inst)
 end;
 
 -- ==========================================
--- 💡 カスタム：ぼんやり光るGlowエフェクト（Rivals完全再現版！）
--- 2本線になる問題とズレを解消し、中身の詰まった1枚の影素材を使用
+-- 💡 カスタム：ぼんやり光るGlowエフェクト（透明度調整版）
 -- ==========================================
 function Library:ApplyGlow(Inst)
     local Glow = Library:Create('ImageLabel', {
         Name = 'Glow',
         BackgroundTransparency = 1,
-        Image = 'rbxassetid://1316045217', -- 実績のある、中身が詰まったドロップシャドウ素材
+        Image = 'rbxassetid://1316045217',
         ImageColor3 = Library.AccentColor,
-        ImageTransparency = 0.15, -- Rivalsのような強めの光
+        ImageTransparency = 0.65, -- 🌟ここを0.15から0.65に変更し、自然な光にしました
         ScaleType = Enum.ScaleType.Slice,
         SliceCenter = Rect.new(10, 10, 118, 118),
-        Size = UDim2.new(1, 30, 1, 30), -- 親UIから四方に15pxずつはみ出させる
-        Position = UDim2.new(0.5, 0, 0.5, 0), -- 絶対に親の中心！
-        AnchorPoint = Vector2.new(0.5, 0.5), -- 基準点を中心に！
-        ZIndex = 0, -- UIの背面に置く
+        Size = UDim2.new(1, 34, 1, 34), -- 🌟広がりを少し調整
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        ZIndex = 0,
         Parent = Inst
     });
 
-    -- テーマカラー変更時にGlowの色も自動で変わるように登録！
     Library:AddToRegistry(Glow, { ImageColor3 = 'AccentColor' });
 end;
 
