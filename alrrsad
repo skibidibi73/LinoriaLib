@@ -1,0 +1,37 @@
+Library:OnUnload(function()
+    RunService:UnbindFromRenderStep("PhantomOverlay")
+    RunService:UnbindFromRenderStep("AutoHideRestore")
+    if TitleAnimConn then TitleAnimConn:Disconnect() end
+    if RageFOVGui then RageFOVGui:Destroy() end
+    FOVRegion:Remove()
+    ST_TracerOutline:Remove(); ST_Tracer:Remove()
+    ST_OuterCircle:Remove(); ST_MainCircle:Remove(); ST_FilledCircle:Remove()
+    RemoveSnow()
+    RemoveRain()
+    clearAura()
+    
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("ToxicHorns_Persistent") then
+        char["ToxicHorns_Persistent"]:Destroy()
+    end
+    restoreOriginalSkin()
+
+    for _, esp in pairs(espObjects) do
+        if esp.Container then esp.Container:Destroy() end
+        if esp.SkeletonLines then
+            for _, line in ipairs(esp.SkeletonLines) do
+                line:Remove()
+            end
+        end
+    end
+    if ESPFolder then ESPFolder:Destroy() end
+    if CH_ScreenGui then CH_ScreenGui:Destroy() end
+    
+    local atmo = Lighting:FindFirstChild("PhantomAtmosphere")
+    if atmo then atmo:Destroy() end
+    
+    if HideFloorPart then HideFloorPart:Destroy() end
+    if AutoHideFloorPart then AutoHideFloorPart:Destroy() end
+    if skinConnection then skinConnection:Disconnect() end
+    UserInputService.MouseIconEnabled = true
+end)
