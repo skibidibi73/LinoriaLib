@@ -57,7 +57,7 @@ if getcustomasset and writefile and isfile and crypt and crypt.base64 then
         if success then
             writefile(fontName, decoded)
         else
-            warn("[Phantom] フォントのBase64デコードに失敗しました。文字列を確認してください。")
+            warn("[Phantom] font file not found.")
         end
     end
 
